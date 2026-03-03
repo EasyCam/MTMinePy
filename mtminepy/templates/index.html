@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% set active_page = "home" %}
+
+{% block content %}
+<div class="container">
+    <div class="jumbotron mt-5">
+        <h1 class="display-4">{{ get_trans('home_welcome', session.get('ui_lang', 'en')) }}</h1>
+        <p class="lead">{{ get_trans('home_subtitle', session.get('ui_lang', 'en')) }}</p>
+        <hr class="my-4">
+        <p>{{ get_trans('home_start_msg', session.get('ui_lang', 'en')) }}</p>
+        <a class="btn btn-primary btn-lg" href="/data" role="button">{{ get_trans('home_btn', session.get('ui_lang', 'en')) }}</a>
+    </div>
+    
+    <div class="row mt-5">
+        <div class="col-md-4">
+            <div class="card p-3">
+                <h4>📚 {{ get_trans('feat_multi', session.get('ui_lang', 'en')) }}</h4>
+                <p>{{ get_trans('feat_multi_desc', session.get('ui_lang', 'en')) }}</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-3">
+                <h4>🔬 {{ get_trans('feat_academic', session.get('ui_lang', 'en')) }}</h4>
+                <p>{{ get_trans('feat_academic_desc', session.get('ui_lang', 'en')) }}</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-3">
+                <h4>🤖 {{ get_trans('feat_ml', session.get('ui_lang', 'en')) }}</h4>
+                <p>{{ get_trans('feat_ml_desc', session.get('ui_lang', 'en')) }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

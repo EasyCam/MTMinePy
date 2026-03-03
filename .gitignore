@@ -205,3 +205,17 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+/.trae
+/article
+article.pdf
+article.zip
+Errors
+/flask_session
+MTMinePy.zip
+MTMinePy_CN_Article.md
+MTMinePy_IEEE_Paper.md
+images-streamlit.zip
+MTMinePy_CLI_Benchmark.zip
+.mtminepy_session/
+scripts/corpus_cache/
+qiuyequ_authorship_analysis.csv

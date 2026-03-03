@@ -1,0 +1,91 @@
+# Sample Data
+
+## en
+Machine learning is a field of inquiry devoted to understanding and building methods that 'learn'.
+
+## en
+Text mining is an artificial intelligence (AI) technology that uses natural language processing (NLP).
+
+## en
+The quick brown fox jumps over the lazy dog.
+
+## cn
+机器学习是一门致力于理解和构建“学习”方法的探究领域。
+
+## cn
+文本挖掘是一种使用自然语言处理（NLP）的人工智能（AI）技术。
+
+## cn
+敏捷的棕色狐狸跳过了懒惰的狗。
+
+## ja
+機械学習は、「学習」する手法を理解し構築することに専念する研究分野です。
+
+## ja
+テキストマイニングは、自然言語処理（NLP）を使用する人工知能（AI）技術です。
+
+## ja
+素早い茶色のキツネが怠け者の犬を飛び越える。
+
+## ko
+기계 학습은 '학습'하는 방법을 이해하고 구축하는 데 전념하는 탐구 분야입니다.
+
+## ko
+텍스트 마이닝은 자연어 처리(NLP)를 사용하는 인공 지능(AI) 기술입니다.
+
+## ko
+날랜 갈색 여우가 게으른 개를 뛰어넘습니다.
+
+## ru
+Машинное обучение — это область исследований, посвященная пониманию и построению методов, которые «обучаются».
+
+## ru
+Интеллектуальный анализ текста — это технология искусственного интеллекта (ИИ), использующая обработку естественного языка (NLP).
+
+## ru
+Быстрая коричневая лиса перепрыгивает через ленивую собаку.
+
+## de
+Maschinelles Lernen ist ein Forschungsfeld, das sich dem Verständnis und Aufbau von Methoden widmet, die 'lernen'.
+
+## de
+Text Mining ist eine Technologie der künstlichen Intelligenz (KI), die natürliche Sprachverarbeitung (NLP) verwendet.
+
+## de
+Der schnelle braune Fuchs springt über den faulen Hund.
+
+## fr
+L'apprentissage automatique est un domaine d'étude consacré à la compréhension et à la construction de méthodes qui « apprennent ».
+
+## fr
+L'exploration de texte est une technologie d'intelligence artificielle (IA) qui utilise le traitement du langage naturel (NLP).
+
+## fr
+Le renard brun rapide saute par-dessus le chien paresseux.
+
+## it
+L'apprendimento automatico è un campo di indagine dedicato alla comprensione e alla costruzione di metodi che 'imparano'.
+
+## it
+Il text mining è una tecnologia di intelligenza artificiale (IA) che utilizza l'elaborazione del linguaggio naturale (NLP).
+
+## it
+La veloce volpe marrone salta sopra il cane pigro.
+
+## es
+El aprendizaje automático es un campo de investigación dedicado a comprender y construir métodos que 'aprenden'.
+
+## es
+La minería de textos es una tecnología de inteligencia artificial (IA) que utiliza el procesamiento del lenguaje natural (NLP).
+
+## es
+El rápido zorro marrón salta sobre el perro perezoso.
+
+## pt
+O aprendizado de máquina é um campo de investigação dedicado a entender e construir métodos que 'aprendem'.
+
+## pt
+A mineração de texto é uma tecnologia de inteligência artificial (IA) que usa processamento de linguagem natural (NLP).
+
+## pt
+A rápida raposa marrom pula sobre o cachorro preguiçoso.

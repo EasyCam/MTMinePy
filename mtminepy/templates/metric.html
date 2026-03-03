@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4">📏 {{ get_trans('menu_metric', session.get('ui_lang', 'en')) }}</h2>
+
+    {% if error %}
+    <div class="alert alert-warning" role="alert">
+        {{ error }}
+    </div>
+    {% else %}
+    
+    <div class="row">
+        <!-- Configuration Panel -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">{{ get_trans('metric_config', session.get('ui_lang', 'en')) }}</h5>
+                </div>
+                <div class="card-body">
+                    <form id="metricForm">
+                        <div class="mb-3">
+                            <label for="metricSelect" class="form-label">{{ get_trans('metric_select', session.get('ui_lang', 'en')) }}</label>
+                            <select class="form-select" id="metricSelect" name="metric">
+                                <optgroup label="{{ get_trans('metric_geo', session.get('ui_lang', 'en')) }}">
+                                    <option value="Euclidean">Euclidean</option>
+                                    <option value="Manhattan (Cityblock)">Manhattan (Cityblock)</option>
+                                    <option value="Chebyshev">Chebyshev</option>
+                                    <option value="Minkowski (p=3)">Minkowski (p=3)</option>
+                                    <option value="SqEuclidean">Squared Euclidean</option>
+                                </optgroup>
+                                <optgroup label="{{ get_trans('metric_stat', session.get('ui_lang', 'en')) }}">
+                                    <option value="Mahalanobis">Mahalanobis</option>
+                                    <option value="Cosine">Cosine</option>
+                                    <option value="Correlation">Correlation</option>
+                                </optgroup>
+                                <optgroup label="{{ get_trans('metric_info', session.get('ui_lang', 'en')) }}">
+                                    <option value="KL Divergence">KL Divergence</option>
+                                </optgroup>
+                                <optgroup label="{{ get_trans('metric_custom', session.get('ui_lang', 'en')) }}">
+                                    <option value="Hsim (Yang, 2007)">Hsim (Yang, 2007)</option>
+                                    <option value="Close (Shao, 2011)">Close (Shao, 2011)</option>
+                                    <option value="Esim (Wang, 2013)">Esim (Wang, 2013)</option>
+                                </optgroup>
+                                <optgroup label="{{ get_trans('metric_other', session.get('ui_lang', 'en')) }}">
+                                    <option value="Canberra">Canberra</option>
+                                    <option value="Bray-Curtis">Bray-Curtis</option>
+                                    <option value="Jaccard">Jaccard</option>
+                                    <option value="Hamming">Hamming</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">{{ get_trans('metric_formula', session.get('ui_lang', 'en')) }}</label>
+                            <div class="alert alert-light border" id="formulaDisplay" style="font-family: 'Times New Roman', serif; font-style: italic;">
+                                Select a metric to see the formula.
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100" id="computeBtn">
+                            {{ get_trans('compute_btn', session.get('ui_lang', 'en')) }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visualization Panel -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" id="vizTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="heatmap-tab" data-bs-toggle="tab" data-bs-target="#heatmap" type="button" role="tab">{{ get_trans('tab_heatmap', session.get('ui_lang', 'en')) }}</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="mds-tab" data-bs-toggle="tab" data-bs-target="#mds" type="button" role="tab">{{ get_trans('tab_mds', session.get('ui_lang', 'en')) }}</button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body text-center">
+                    <div class="tab-content" id="vizTabContent">
+                        <div class="tab-pane fade show active" id="heatmap" role="tabpanel">
+                            <div id="heatmapContainer" style="width: 100%; height: 80vh; min-height: 600px;">
+                                <p class="text-muted mt-5">{{ get_trans('heatmap_ph', session.get('ui_lang', 'en')) }}</p>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="mds" role="tabpanel">
+                            <div id="mdsContainer" style="width: 100%; height: 80vh; min-height: 600px;">
+                                <p class="text-muted mt-5">{{ get_trans('mds_ph', session.get('ui_lang', 'en')) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="loadingSpinner" class="spinner-border text-primary mt-5" role="status" style="display: none;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const FORMULAS = {
+        "Euclidean": "d(x,y) = √[∑(xi - yi)²]",
+        "Manhattan (Cityblock)": "d(x,y) = ∑|xi - yi|",
+        "Chebyshev": "d(x,y) = max|xi - yi|",
+        "Minkowski (p=3)": "d(x,y) = (∑|xi - yi|³)⅓",
+        "Mahalanobis": "d(x,y) = √[(x-y)T S⁻¹ (x-y)]",
+        "Cosine": "d(x,y) = 1 - (x·y) / (||x|| ||y||)",
+        "Correlation": "d(x,y) = 1 - correlation(x,y)",
+        "Canberra": "d(x,y) = ∑ |xi-yi| / (|xi|+|yi|)",
+        "Bray-Curtis": "d(x,y) = ∑|xi-yi| / ∑|xi+yi|",
+        "SqEuclidean": "d(x,y) = ∑(xi - yi)²",
+        "Jaccard": "d(x,y) = (|x∪y| - |x∩y|) / |x∪y|",
+        "Hamming": "d(x,y) = (1/n) ∑ 1(xi ≠ yi)",
+        "KL Divergence": "DKL(P||Q) = ∑ P(i) log(P(i)/Q(i))",
+        "Hsim (Yang, 2007)": "Hsim = (1/n) ∑ [1 / (1+|xik-xjk|)]",
+        "Close (Shao, 2011)": "Close = (1/n) ∑ exp(-|xik-xjk|)",
+        "Esim (Wang, 2013)": "Esim = (1/n) ∑ ωk exp(-|diff|/denom)"
+    };
+
+    $('#metricSelect').change(function() {
+        const val = $(this).val();
+        $('#formulaDisplay').text(FORMULAS[val] || "");
+    });
+    
+    // Trigger change initially
+    $('#metricSelect').trigger('change');
+
+    $('#metricForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        // Don't hide containers, just clear or show loading
+        // $('#heatmapContainer').hide(); 
+        // $('#mdsContainer').hide();
+        $('#loadingSpinner').show();
+        $('#computeBtn').prop('disabled', true);
+
+        $.ajax({
+            url: '/metric',
+            method: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                $('#loadingSpinner').hide();
+                $('#computeBtn').prop('disabled', false);
+                
+                if (response.heatmap_option) {
+                    var chart = echarts.init(document.getElementById('heatmapContainer'));
+                    chart.clear();
+                    chart.setOption(response.heatmap_option);
+                    allCharts.push(chart);
+                }
+                
+                if (response.mds_option) {
+                    var chart = echarts.init(document.getElementById('mdsContainer'));
+                    chart.clear();
+                    // MDS usually needs tooltip adjustment
+                    var opt = response.mds_option;
+                    opt.tooltip = {
+                        formatter: function (params) {
+                            return params.seriesName + '<br/>(' + params.value[0].toFixed(2) + ', ' + params.value[1].toFixed(2) + ')';
+                        }
+                    };
+                    chart.setOption(opt);
+                    chart.resize(); // Ensure resize is called
+                    allCharts.push(chart);
+                }
+            },
+            error: function(err) {
+                $('#loadingSpinner').hide();
+                $('#computeBtn').prop('disabled', false);
+                alert("Error computing metrics. Please check console.");
+                console.error(err);
+            }
+        });
+    });
+
+    // Auto-resize charts on window resize
+    window.addEventListener('resize', function() {
+        allCharts.forEach(function(chart) {
+            chart.resize();
+        });
+    });
+
+    // Resize when tab becomes visible
+    $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+        allCharts.forEach(function(chart) {
+            chart.resize();
+        });
+    });
+</script>
+{% endblock %}

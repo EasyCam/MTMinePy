@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+{% set active_page = "explore" %}
+
+{% block content %}
+<h2>{{ get_trans('menu_explore', session.get('ui_lang', 'en')) }}</h2>
+
+{% if error %}
+<div class="alert alert-warning">{{ error }}</div>
+{% else %}
+
+<ul class="nav nav-tabs" id="exploreTabs" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="stats-tab" data-bs-toggle="tab" href="#stats" role="tab">{{ get_trans('tab_stats', session.get('ui_lang', 'en')) }}</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="crosstab-tab" data-bs-toggle="tab" href="#crosstab" role="tab">{{ get_trans('tab_crosstab', session.get('ui_lang', 'en')) }}</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="kwic-tab" data-bs-toggle="tab" href="#kwic" role="tab">{{ get_trans('tab_kwic', session.get('ui_lang', 'en')) }}</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="network-tab" data-bs-toggle="tab" href="#network" role="tab">{{ get_trans('tab_network', session.get('ui_lang', 'en')) }}</a>
+  </li>
+</ul>
+
+<div class="tab-content mt-3" id="exploreTabContent">
+  <!-- Stats Tab -->
+  <div class="tab-pane fade show active" id="stats" role="tabpanel">
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <div class="card p-3 h-100">
+                <h4>{{ get_trans('lex_stats_title', session.get('ui_lang', 'en')) }}</h4>
+                <div class="table-responsive">
+                    {{ stats|safe }}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card p-3 h-100">
+                <h4>{{ get_trans('wordcloud_title', session.get('ui_lang', 'en')) }}</h4>
+                <!-- ECharts WordCloud Container -->
+                <div id="wordcloud-chart" style="width: 100%; height: 400px;"></div>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <!-- Group Analysis (Crosstab) Tab -->
+  <div class="tab-pane fade" id="crosstab" role="tabpanel">
+    <div class="card p-3">
+        <form id="crosstabForm" class="row g-3">
+            <div class="col-md-4">
+                <label>{{ get_trans('select_group_col', session.get('ui_lang', 'en')) }}</label>
+                <select name="group_col" class="form-select">
+                    {% for col in session['df'].columns %}
+                    <option value="{{ col }}">{{ col }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label>{{ get_trans('top_n_words', session.get('ui_lang', 'en')) }}</label>
+                <input type="number" name="top_n" value="20" class="form-control">
+            </div>
+            <div class="col-md-4 align-self-end">
+                <input type="hidden" name="action" value="crosstab">
+                <button type="submit" class="btn btn-primary">{{ get_trans('search_btn', session.get('ui_lang', 'en')) }}</button>
+            </div>
+        </form>
+        <div id="crosstabResult" class="mt-4 text-center">
+             <div id="crosstab-chart" style="width: 100%; height: 600px;"></div>
+        </div>
+    </div>
+  </div>
+
+  <!-- KWIC Tab -->
+  <div class="tab-pane fade" id="kwic" role="tabpanel">
+    <div class="card p-3">
+        <form id="kwicForm" class="row g-3">
+            <div class="col-auto">
+                <input type="text" class="form-control" name="keyword" placeholder="{{ get_trans('search_ph', session.get('ui_lang', 'en')) }}">
+            </div>
+            <div class="col-auto">
+                <input type="hidden" name="action" value="kwic">
+                <button type="submit" class="btn btn-primary">{{ get_trans('search_btn', session.get('ui_lang', 'en')) }}</button>
+            </div>
+        </form>
+        <div id="kwicResults" class="table-responsive"></div>
+    </div>
+  </div>
+
+  <!-- Network Tab -->
+  <div class="tab-pane fade" id="network" role="tabpanel">
+    <div class="card p-3">
+        <!-- ECharts Network Container -->
+        <div id="network-chart" style="width: 100%; height: 600px;"></div>
+    </div>
+  </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+var networkChart = echarts.init(document.getElementById('network-chart'));
+var wcChart = echarts.init(document.getElementById('wordcloud-chart'));
+allCharts.push(networkChart);
+allCharts.push(wcChart);
+
+// Load WordCloud on Page Load
+{% if not error %}
+$.post('/explore', {action: 'wordcloud_json'}, function(res) {
+    if(res.data) {
+        var option = {
+            tooltip: {},
+            series: [{
+                type: 'wordCloud',
+                gridSize: 2,
+                sizeRange: [12, 50],
+                rotationRange: [-90, 90],
+                shape: 'pentagon',
+                width: '100%',
+                height: '100%',
+                drawOutOfBound: false,
+                textStyle: {
+                    fontFamily: 'sans-serif',
+                    fontWeight: 'bold',
+                    color: function () {
+                        return 'rgb(' + [
+                            Math.round(Math.random() * 160),
+                            Math.round(Math.random() * 160),
+                            Math.round(Math.random() * 160)
+                        ].join(',') + ')';
+                    }
+                },
+                emphasis: {
+                    textStyle: {
+                        shadowBlur: 10,
+                        shadowColor: '#333'
+                    }
+                },
+                data: res.data
+            }]
+        };
+        wcChart.setOption(option);
+    }
+});
+
+// Load Network Graph on Page Load (or tab switch)
+$.post('/explore', {action: 'network_json'}, function(res) {
+    if(res.nodes) {
+        var option = {
+            title: { text: 'Co-occurrence Network', top: 'bottom', left: 'right' },
+            tooltip: {},
+            legend: [{ data: res.categories.map(function(a){return a.name;}) }],
+            animationDuration: 3000, // Short animation duration
+            animationEasingUpdate: 'quinticInOut',
+            series: [{
+                name: 'Network',
+                type: 'graph',
+                layout: 'force',
+                data: res.nodes,
+                links: res.links,
+                categories: res.categories,
+                roam: true,
+                label: { 
+                    show: true, // ALWAYS show labels
+                    position: 'right', 
+                    formatter: '{b}',
+                    fontSize: 12,
+                    fontWeight: 'bold'
+                },
+                lineStyle: { color: 'source', curveness: 0.3 },
+                force: { 
+                    repulsion: 300,
+                    gravity: 0.1,
+                    edgeLength: 50,
+                    layoutAnimation: false // STOP continuous movement
+                }
+            }]
+        };
+        networkChart.setOption(option);
+    }
+});
+{% endif %}
+
+// Fix chart resize when tab becomes visible
+$('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+    networkChart.resize();
+    wcChart.resize();
+});
+
+$('#kwicForm').on('submit', function(e){
+    e.preventDefault();
+    $('#kwicResults').html('<div class="spinner-border"></div>');
+    $.post('/explore', $(this).serialize(), function(res){
+        $('#kwicResults').html(res.html);
+    });
+});
+
+$('#crosstabForm').on('submit', function(e){
+    e.preventDefault();
+    // $('#crosstabResult').html('<div class="spinner-border"></div>');
+    var chart = echarts.init(document.getElementById('crosstab-chart'));
+    chart.showLoading();
+    
+    $.post('/explore', $(this).serialize(), function(res){
+        chart.hideLoading();
+        if(res.echarts_option) {
+            chart.clear();
+            chart.setOption(res.echarts_option);
+            allCharts.push(chart);
+        } else {
+            alert('No data found or error generating plot.');
+        }
+    });
+});
+</script>
+{% endblock %}

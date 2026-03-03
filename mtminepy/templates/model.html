@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+{% set active_page = "model" %}
+
+{% block content %}
+<h2>{{ get_trans('menu_model', session.get('ui_lang', 'en')) }}</h2>
+
+{% if error %}
+<div class="alert alert-warning">{{ error }}</div>
+{% else %}
+
+<ul class="nav nav-tabs" id="modelTabs" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="unsup-tab" data-bs-toggle="tab" href="#unsup" role="tab">{{ get_trans('tab_unsup', session.get('ui_lang', 'en')) }}</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="sup-tab" data-bs-toggle="tab" href="#sup" role="tab">{{ get_trans('tab_sup', session.get('ui_lang', 'en')) }}</a>
+  </li>
+</ul>
+
+<div class="tab-content mt-3" id="modelTabContent">
+  <!-- Unsupervised -->
+  <div class="tab-pane fade show active" id="unsup" role="tabpanel">
+    <div class="card p-4">
+        <form id="unsupForm">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label>{{ get_trans('task_label', session.get('ui_lang', 'en')) }}</label>
+                    <select name="action" class="form-select" id="unsupAction">
+                        <option value="cluster">Clustering (KMeans, DBSCAN, etc)</option>
+                        <option value="topic">Topic Modeling (LDA, STM)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                 <div class="col-md-6">
+                    <label>{{ get_trans('ngram_label', session.get('ui_lang', 'en')) }}</label>
+                    <select name="ngram_range" class="form-select">
+                        <option value="1,1">{{ get_trans('unigram', session.get('ui_lang', 'en')) }}</option>
+                        <option value="1,2">{{ get_trans('bigram', session.get('ui_lang', 'en')) }}</option>
+                        <option value="1,3">{{ get_trans('trigram', session.get('ui_lang', 'en')) }}</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Cluster Options -->
+            <div id="clusterOpts" class="row mb-3">
+                <div class="col-md-4">
+                    <label>{{ get_trans('algo_label', session.get('ui_lang', 'en')) }}</label>
+                    <select name="algorithm" class="form-select">
+                        <option value="kmeans">K-Means</option>
+                        <option value="agglomerative">Agglomerative (Hierarchical)</option>
+                        <option value="spectral">Spectral</option>
+                        <option value="dbscan">DBSCAN</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label>{{ get_trans('proj_label', session.get('ui_lang', 'en')) }}</label>
+                    <select name="projection" class="form-select">
+                        <option value="pca">PCA</option>
+                        <option value="tsne">t-SNE</option>
+                        <option value="umap">UMAP</option>
+                        <option value="lda">Linear Discriminant (LDA/FA)</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label>{{ get_trans('clusters_label', session.get('ui_lang', 'en')) }}</label>
+                    <input type="number" name="n_clusters" value="3" class="form-control">
+                </div>
+            </div>
+
+            <!-- Topic Options -->
+            <div id="topicOpts" class="row mb-3" style="display:none;">
+                <div class="col-md-6">
+                    <label>{{ get_trans('topics_label', session.get('ui_lang', 'en')) }}</label>
+                    <input type="number" name="n_topics" value="5" class="form-control">
+                </div>
+                <div class="col-md-6">
+                    <label>{{ get_trans('select_covariate', session.get('ui_lang', 'en')) }}</label>
+                    <select name="covariate" class="form-select">
+                        <option value="None">None</option>
+                        {% for col in columns %}
+                        <option value="{{ col }}">{{ col }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">{{ get_trans('run_model_btn', session.get('ui_lang', 'en')) }}</button>
+        </form>
+        
+        <!-- ECharts Container for Clustering -->
+        <div id="unsupResult" class="mt-4 text-center">
+            <div id="cluster-chart" style="width: 100%; height: 80vh; min-height: 600px; display: none;"></div>
+            <div id="topic-result"></div>
+        </div>
+    </div>
+  </div>
+
+  <!-- Supervised -->
+  <div class="tab-pane fade" id="sup" role="tabpanel">
+    <div class="card p-4">
+        <form id="supForm">
+            <input type="hidden" name="action" value="classify">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label>{{ get_trans('label_col', session.get('ui_lang', 'en')) }}</label>
+                    <select name="label_col" class="form-select">
+                        {% for col in columns %}
+                        <option value="{{ col }}">{{ col }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label>{{ get_trans('classifier_label', session.get('ui_lang', 'en')) }}</label>
+                    <select name="algorithm" class="form-select">
+                        <option value="svm">Support Vector Machine (SVM)</option>
+                        <option value="rf">Random Forest</option>
+                        <option value="lda">Linear Discriminant Analysis (LDA)</option>
+                        <option value="qda">Quadratic Discriminant Analysis (QDA)</option>
+                        <option value="c50">Decision Tree (C5.0 style)</option>
+                        <option value="elastic">Elastic Net (Logistic)</option>
+                        <option value="knn">K-Nearest Neighbors</option>
+                    </select>
+                </div>
+            </div>
+            
+             <div class="row mb-3">
+                 <div class="col-md-6">
+                    <label>{{ get_trans('ngram_label', session.get('ui_lang', 'en')) }}</label>
+                    <select name="ngram_range" class="form-select">
+                        <option value="1,1">{{ get_trans('unigram', session.get('ui_lang', 'en')) }}</option>
+                        <option value="1,2">{{ get_trans('bigram', session.get('ui_lang', 'en')) }}</option>
+                        <option value="1,3">{{ get_trans('trigram', session.get('ui_lang', 'en')) }}</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" name="use_boruta" value="true" id="borutaCheck">
+                <label class="form-check-label" for="borutaCheck">
+                    {{ get_trans('run_boruta', session.get('ui_lang', 'en')) }}
+                </label>
+            </div>
+            <button type="submit" class="btn btn-success">{{ get_trans('run_model_btn', session.get('ui_lang', 'en')) }}</button>
+        </form>
+        <div id="supResult" class="mt-4">
+            <!-- Removed raw text output -->
+            <div id="supPlot" class="text-center" style="width: 100%; height: 80vh; min-height: 600px;"></div>
+        </div>
+    </div>
+  </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    var clusterChart = echarts.init(document.getElementById('cluster-chart'));
+    allCharts.push(clusterChart);
+
+    $('#unsupAction').change(function(){
+        if($(this).val() == 'topic'){
+            $('#clusterOpts').hide();
+            $('#topicOpts').show();
+        } else {
+            $('#clusterOpts').show();
+            $('#topicOpts').hide();
+        }
+    });
+
+    $('#unsupForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        $('#topic-result').html('<div class="spinner-border"></div> Running...');
+        $('#cluster-chart').hide();
+        
+        var action = $('#unsupAction').val();
+        
+        $.post('/model', $(this).serialize(), function(res) {
+            $('#topic-result').empty();
+            
+            if(action == 'topic') {
+                $('#topic-result').html(res.html);
+            } else if (res.cluster_json) {
+                // Render ECharts Scatter
+                $('#cluster-chart').show();
+                clusterChart.resize();
+                
+                var option = {
+                    title: { text: 'Cluster Projection', left: 'center' },
+                    tooltip: {
+                        formatter: function (params) {
+                            return params.seriesName + ' : (' + params.value[0].toFixed(2) + ', ' + params.value[1].toFixed(2) + ')';
+                        }
+                    },
+                    legend: { data: res.cluster_json.legend.data, bottom: 0 },
+                    xAxis: { scale: true },
+                    yAxis: { scale: true },
+                    series: res.cluster_json.series
+                };
+                clusterChart.setOption(option);
+            }
+        });
+    });
+
+    $('#supForm').on('submit', function(e) {
+        e.preventDefault();
+        // $('#supText').text('Training...');
+        
+        var chart = echarts.init(document.getElementById('supPlot'));
+        chart.showLoading();
+        
+        $.post('/model', $(this).serialize(), function(res) {
+            chart.hideLoading();
+            // $('#supText').text(res.text);
+            
+            if(res.echarts_option) {
+                chart.clear();
+                
+                // Add accuracy info to title subtitle
+                if(res.text) {
+                     // Extract accuracy from text report if simple parsing is possible, 
+                     // or just use the first line which usually contains "Accuracy"
+                     var lines = res.text.split('\n');
+                     var accLine = lines[0] || "";
+                     
+                     if (!res.echarts_option.title) res.echarts_option.title = {};
+                     res.echarts_option.title.subtext = accLine;
+                     res.echarts_option.title.left = 'center';
+                }
+                
+                chart.setOption(res.echarts_option);
+                allCharts.push(chart);
+            }
+        });
+    });
+    
+    // Resize on tab show
+    $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+        clusterChart.resize();
+        // Resize all charts
+        allCharts.forEach(function(c){ c.resize(); });
+    });
+    
+    // Auto-resize charts on window resize
+    window.addEventListener('resize', function() {
+        allCharts.forEach(function(chart) {
+            chart.resize();
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,80 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mtminepy"
+version = "0.1.0"
+description = "MTMinePy - A Multilingual Text Mining Platform for Academic Research"
+readme = "README.md"
+license = "GPL-3.0-only"
+requires-python = ">=3.9"
+authors = [
+    {name = "EasyCam"},
+]
+keywords = ["text-mining", "nlp", "multilingual", "flask", "academic", "text-analysis"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Education",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Text Processing :: Linguistic",
+    "Framework :: Flask",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "flask>=2.0",
+    "flask-session>=0.5",
+    "pandas>=1.5",
+    "numpy>=1.23",
+    "scikit-learn>=1.2",
+    "scipy>=1.10",
+    "langdetect>=1.0",
+    "jieba>=0.42",
+    "nltk>=3.8",
+    "matplotlib>=3.6",
+    "networkx>=3.0",
+    "openpyxl>=3.0",
+    "statsmodels>=0.14",
+    "waitress>=2.1",
+]
+
+[project.optional-dependencies]
+full = [
+    "janome>=0.5",
+    "spacy>=3.5",
+    "hanlp>=2.1",
+    "ltp>=4.2",
+    "umap-learn>=0.5",
+    "boruta>=0.3",
+    "prince>=0.13",
+    "lexical-diversity>=0.1",
+    "seaborn>=0.12",
+    "wordcloud>=1.9",
+    "xlsxwriter>=3.0",
+]
+dev = [
+    "build",
+    "twine",
+]
+
+[project.urls]
+Homepage = "https://github.com/EasyCam/MTMinePy"
+Repository = "https://github.com/EasyCam/MTMinePy"
+Issues = "https://github.com/EasyCam/MTMinePy/issues"
+
+[project.scripts]
+mtminepy = "mtminepy.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["mtminepy*"]
+
+[tool.setuptools.package-data]
+mtminepy = ["templates/*.html"]

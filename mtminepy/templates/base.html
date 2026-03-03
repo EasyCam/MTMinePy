@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ get_trans('title', session.get('ui_lang', 'en')) }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <!-- ECharts CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2.1.0/dist/echarts-wordcloud.min.js"></script>
+    <style>
+        body { font-family: 'Roboto', sans-serif; background-color: #f8f9fa; }
+        
+        /* Sidebar Styling */
+        .sidebar { min-height: 100vh; background-color: #343a40; color: white; padding-top: 20px; transition: all 0.3s; }
+        .sidebar a { color: #adb5bd; padding: 10px 20px; display: block; text-decoration: none; }
+        .sidebar a:hover, .sidebar a.active { color: white; background-color: #495057; }
+        .lang-switch { margin: 20px; }
+
+        /* Responsive Main Content */
+        .main-content { padding: 20px; transition: all 0.3s; }
+        .card { border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        
+        /* Mobile Sidebar Toggle */
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; z-index: 1000; left: -250px; width: 250px; height: 100%; }
+            .sidebar.active { left: 0; }
+            .main-content { margin-left: 0 !important; }
+            .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+            .overlay.active { display: block; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Toggle Button -->
+    <button class="btn btn-dark d-md-none m-2" id="sidebarToggle">☰ Menu</button>
+    <div class="overlay" id="sidebarOverlay"></div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar" id="sidebar">
+                <h3 class="text-center mb-4">🎓 MTMinePy</h3>
+                
+                <div class="lang-switch">
+                    <label class="text-white-50 small">{{ get_trans('lang_select', session.get('ui_lang', 'en')) }}</label>
+                    <select class="form-select form-select-sm" id="langSelector">
+                        {% for code, name in all_langs.items() %}
+                        <option value="{{ code }}" {% if session.get('ui_lang', 'en') == code %}selected{% endif %}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <nav>
+                    <a href="/" class="{{ 'active' if active_page == 'home' else '' }}">{{ get_trans('menu_home', session.get('ui_lang', 'en')) }}</a>
+                    <a href="/data" class="{{ 'active' if active_page == 'data' else '' }}">{{ get_trans('menu_data', session.get('ui_lang', 'en')) }}</a>
+                    <a href="/preprocess" class="{{ 'active' if active_page == 'preprocess' else '' }}">{{ get_trans('menu_preprocess', session.get('ui_lang', 'en')) }}</a>
+                    <a href="/explore" class="{{ 'active' if active_page == 'explore' else '' }}">{{ get_trans('menu_explore', session.get('ui_lang', 'en')) }}</a>
+                    <a href="/metric" class="{{ 'active' if active_page == 'metric' else '' }}">{{ get_trans('menu_metric', session.get('ui_lang', 'en')) }}</a>
+                    <a href="/model" class="{{ 'active' if active_page == 'model' else '' }}">{{ get_trans('menu_model', session.get('ui_lang', 'en')) }}</a>
+                </nav>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Language Switcher
+        $('#langSelector').change(function() {
+            var lang = $(this).val();
+            window.location.href = '/set_lang/' + lang;
+        });
+
+        // Mobile Sidebar Toggle
+        $('#sidebarToggle, #sidebarOverlay').click(function() {
+            $('#sidebar').toggleClass('active');
+            $('#sidebarOverlay').toggleClass('active');
+        });
+
+        // Global Chart Resize Handler
+        var allCharts = [];
+        window.addEventListener('resize', function() {
+            allCharts.forEach(function(chart) {
+                if(chart) chart.resize();
+            });
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

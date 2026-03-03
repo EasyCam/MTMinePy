@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% set active_page = "data" %}
+
+{% block content %}
+<h2>{{ get_trans('data_title', session.get('ui_lang', 'en')) }}</h2>
+<div class="card p-4">
+    <h4>{{ get_trans('data_upload_title', session.get('ui_lang', 'en')) }}</h4>
+    <form id="uploadForm">
+        <div class="mb-3">
+            <input type="file" class="form-control" name="file" accept=".csv,.xlsx,.txt,.md,.json">
+        </div>
+        <button type="submit" class="btn btn-primary">{{ get_trans('data_upload_btn', session.get('ui_lang', 'en')) }}</button>
+    </form>
+    
+    <hr>
+    
+    <h4>{{ get_trans('data_gen_title', session.get('ui_lang', 'en')) }}</h4>
+    <button id="genBtn" class="btn btn-secondary">{{ get_trans('data_gen_btn', session.get('ui_lang', 'en')) }}</button>
+</div>
+
+<div id="dataInfo" class="mt-4">
+    {% if df_info %}
+    <div class="alert alert-success">
+        {{ get_trans('data_loaded_msg', session.get('ui_lang', 'en')).format(rows=df_info.rows, cols=df_info.columns|length) }}
+    </div>
+    <div class="table-responsive">
+        {{ df_info.preview|safe }}
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $('#uploadForm').on('submit', function(e) {
+        e.preventDefault();
+        var formData = new FormData(this);
+        $.ajax({
+            url: '/data',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(res) {
+                location.reload();
+            }
+        });
+    });
+
+    $('#genBtn').on('click', function() {
+        $.post('/data', {action: 'generate'}, function(res) {
+            location.reload();
+        });
+    });
+</script>
+{% endblock %}
